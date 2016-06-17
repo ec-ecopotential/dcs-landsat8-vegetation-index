@@ -109,6 +109,7 @@ function DNtoReflectance() {
   offset=$( getOffset ${band} ${base_name} )
 
   otbcli_BandMath \
+    -progress false \
     -il ${base_name}/${base_name}_B${band}.TIF \
     -exp "${gain} * im1b1 + ${offset}" \
     -out ${base_name}/REFLECTANCE_B${band}.TIF
@@ -141,12 +142,14 @@ function calcVegetation() {
   esac
 
   otbcli_BandMath \
+    -progress false \
     -il ${base_name}/REFLECTANCE_B${band1}.TIF \
     ${base_name}/REFLECTANCE_B${band2}.TIF \
     -exp " im1b1 >= 0 && im1b1 <= 1 && im2b1 >= 0 && im2b1 <= 1 ? ( im1b1 - im2b1 ) / ( im1b1 + im2b1 ) : 0  " \
     -out ${base_name}/${base_name}_${index}.TIF
 
   gdalwarp \
+    -q \
     -r cubic \
     -wm 8192 \
     -multi \
@@ -239,6 +242,9 @@ function main() {
       ciop-log "INFO" "Publish vegeatation index ${index}"
       ciop-publish -m ${result}.TIF
 
+      target_xml=${result}.TIF.xml
+      cp /application/ls-vi/etc/eop-template.xml ${target_xml}
+
       # set product type
       metadata \
         "//A:EarthObservation/D:metaDataProperty/D:EarthObservationMetaData/D:productType" \
@@ -300,7 +306,8 @@ function main() {
         "//A:EarthObservation/B:procedure/D:EarthObservationEquipment/D:acquisitionParameters/D:Acquisition/D:wrsLatitudeGrid" \
         "${row}" \
         ${target_xml} 
-      
+     
+      ciop-publish -m ${target_xml} 
     done
 
   done

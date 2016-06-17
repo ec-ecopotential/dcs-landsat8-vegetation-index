@@ -3,7 +3,7 @@
 # source the ciop functions (e.g. ciop-log, ciop-getparam)
 source ${ciop_job_include}
 
-source /application/pan-sharp/lib/functions.sh
+source /application/ls-vi/lib/functions.sh
 
 trap cleanExit EXIT
 
